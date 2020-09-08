@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,7 +44,7 @@ import reactor.core.publisher.Mono;
  * 	&#064;Override
  * 	public Mono&lt;Void&gt; handle(WebSocketSession session) {
  *
- * 		Flux&lt;WebSocketMessage&gt; input = session.receive()
+ * 		Flux&lt;WebSocketMessage&gt; output = session.receive()
  *			.doOnNext(message -> {
  * 				// ...
  * 			})
@@ -89,7 +89,7 @@ import reactor.core.publisher.Mono;
  * completion of that flow. That means there is no need to check if the
  * connection is open, since Reactive Streams signals will terminate activity.
  * The inbound stream receives a completion/error signal, and the outbound
- * stream receives receives a cancellation signal.
+ * stream receives a cancellation signal.
  *
  * @author Rossen Stoyanchev
  * @since 5.0
@@ -108,14 +108,14 @@ public interface WebSocketHandler {
 	 * Invoked when a new WebSocket connection is established, and allows
 	 * handling of the session.
 	 *
-	 * <p>See the class-level doc and the reference for more details and
+	 * <p>See the class-level doc and the reference manual for more details and
 	 * examples of how to handle the session.
 	 *
 	 * @param session the session to handle
-	 * @return indicates when appilcation handling of the session is complete,
+	 * @return indicates when application handling of the session is complete,
 	 * which should reflect the completion of the inbound message stream
 	 * (i.e. connection closing) and possibly the completion of the outbound
-	 * message stream and the writing of messages.
+	 * message stream and the writing of messages
 	 */
 	Mono<Void> handle(WebSocketSession session);
 

@@ -1,11 +1,11 @@
 /*
- * Copyright 2002-2018 the original author or authors.
+ * Copyright 2002-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,11 +17,12 @@
 package org.springframework.jdbc.core.metadata;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
@@ -34,6 +35,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 /**
  * Class to manage context meta-data used for the configuration
@@ -253,7 +255,7 @@ public class TableMetaDataContext {
 					for (Map.Entry<String, ?> entry : inParameters.entrySet()) {
 						if (column.equalsIgnoreCase(entry.getKey())) {
 							value = entry.getValue();
-							// TODO: break;
+							break;
 						}
 					}
 				}
@@ -265,7 +267,7 @@ public class TableMetaDataContext {
 
 
 	/**
-	 * Build the insert string based on configuration and meta-data information
+	 * Build the insert string based on configuration and meta-data information.
 	 * @return the insert string to be used
 	 */
 	public String createInsertString(String... generatedKeyNames) {
@@ -294,20 +296,18 @@ public class TableMetaDataContext {
 		insertStatement.append(") VALUES(");
 		if (columnCount < 1) {
 			if (this.generatedKeyColumnsUsed) {
-				logger.info("Unable to locate non-key columns for table '" +
-						getTableName() + "' so an empty insert statement is generated");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Unable to locate non-key columns for table '" +
+							getTableName() + "' so an empty insert statement is generated");
+				}
 			}
 			else {
 				throw new InvalidDataAccessApiUsageException("Unable to locate columns for table '" +
 						getTableName() + "' so an insert statement can't be generated");
 			}
 		}
-		for (int i = 0; i < columnCount; i++) {
-			if (i > 0) {
-				insertStatement.append(", ");
-			}
-			insertStatement.append("?");
-		}
+		String params = String.join(", ", Collections.nCopies(columnCount, "?"));
+		insertStatement.append(params);
 		insertStatement.append(")");
 		return insertStatement.toString();
 	}
@@ -319,7 +319,7 @@ public class TableMetaDataContext {
 	public int[] createInsertTypes() {
 		int[] types = new int[getTableColumns().size()];
 		List<TableParameterMetaData> parameters = obtainMetaDataProvider().getTableParameterMetaData();
-		Map<String, TableParameterMetaData> parameterMap = new LinkedHashMap<>(parameters.size());
+		Map<String, TableParameterMetaData> parameterMap = CollectionUtils.newLinkedHashMap(parameters.size());
 		for (TableParameterMetaData tpmd : parameters) {
 			parameterMap.put(tpmd.getParameterName().toUpperCase(), tpmd);
 		}
@@ -361,6 +361,9 @@ public class TableMetaDataContext {
 	}
 
 	/**
+	 * Does this database support a simple query to retrieve generated keys
+	 * when the JDBC 3.0 feature is not supported:
+	 * {@link java.sql.DatabaseMetaData#supportsGetGeneratedKeys()}?
 	 * @deprecated as of 4.3.15, in favor of {@link #getSimpleQueryForGetGeneratedKey}
 	 */
 	@Deprecated
